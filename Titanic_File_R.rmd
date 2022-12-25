@@ -1,0 +1,220 @@
+---
+title: "Titanic"
+output: 
+html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library(ggplot2)
+library(gridExtra)
+library(knitr)
+library(RColorBrewer)
+
+train <- read.csv("train.csv", sep = ",")
+
+train$FTDeckEmb = paste(train$Embarked, substring(train$Cabin, 0,1), sep = "_")
+
+str(train)
+```
+
+
+```{r pressure1, echo=TRUE}
+summary(train)
+#Mean value of Deceased Fare, trimming bottom/top 20% to minimize outliers.
+with(train, round(mean(train$Fare[train$Survived == 0], trim = .2),2))
+#Mean value of Survived Fare, trimming bottom/top 20% to minimize outliers.
+with(train, round(mean(train$Fare[train$Survived == 1], trim = .2),2))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure2, echo=TRUE}
+par(mfrow = c(2,2)) 
+
+hist(train$Age[train$Survived == 0],main="Age of Deceased", xlab = "", col = "red")
+hist(train$Age[train$Survived==1],main="Age of Survived",xlab = "", col="green")
+with(train, boxplot(train$Age[train$Survived == 0 & train$Age < 65], main="Age of Deceased", xlab = "", col = "red"))
+
+with(train, boxplot(train$Age[train$Survived == 1  & train$Age < 65], main="Age of Survived", xlab = "", col = "green"))
+
+
+
+
+par(mfrow = c(2,2))
+
+
+with(train, hist(train$Fare[train$Survived == 0], main="Fare of Deceased", xlab = "", col = "red"))
+     
+with(train, hist(train$Fare[train$Survived == 1], main="Fare of Survived", xlab = "", col = "green"))
+
+with(train, boxplot(train$Fare[train$Survived == 0 & train$Fare < 150], main="Fare of Deceased", xlab = "", col = "red"))
+
+with(train, boxplot(train$Fare[train$Survived == 1 & train$Fare < 150], main="Fare of Survived", xlab = "", col = "green"))
+
+help(hist)
+```
+
+
+```{r pressure3, echo=TRUE}
+par(mfrow = c(1,2))
+
+
+Sex_Class    <- table(SEX = train$Sex[train$Survived == 0 & train$Age > 14],CLASS = train$Pclass[train$Survived == 0 & train$Age > 14])
+addmargins(Sex_Class)
+
+
+color.names = c("red","blue")
+
+
+barplot(Sex_Class,main="Gender & Class (adults) - Died",ylab="Frequency",col = color.names,beside= TRUE,legend=rownames(Sex_Class),args.legend = list(x = "topleft",horiz = FALSE))
+
+
+
+Sex_Class <- table(SEX = train$Sex[train$Survived == 1 & train$Age > 14],CLASS = train$Pclass[train$Survived == 1 & train$Age > 14])
+addmargins(Sex_Class)
+
+
+color.names = c("red","blue")
+
+
+barplot(Sex_Class,main="Gender & Class (adults) - Survived",ylab="Frequency",col = color.names,beside= TRUE)
+```
+
+
+```{r pressure4, echo=TRUE}
+
+Survive_Class <- table(Survived = train$Survived[train$Age <= 14],CLASS = train$Pclass[train$Age <= 14])
+addmargins(Survive_Class)
+
+color.names = c("red","blue")
+lgnd <- c("Died", "Survived")
+
+barplot(Survive_Class,main="Class/Survival Status - Children",ylab="Frequency",col = color.names,beside= TRUE,legend=lgnd,args.legend = list(x = "topleft",horiz = FALSE))
+
+par(mfrow = c(1,3))
+Class1Kids <- table(Survived = train$Survived[train$Age <= 14 & train$Pclass == 1])
+Class2Kids <- table(Survived = train$Survived[train$Age <= 14 & train$Pclass == 2])
+Class3Kids <- table(Survived = train$Survived[train$Age <= 14 & train$Pclass == 3])
+
+pie(Class1Kids,main="Class 1 Kids", col = color.names)
+pie(Class2Kids,main="Class 2 Kids", col = "blue")
+pie(Class3Kids,main="Class 3 Kids", col = color.names)
+```
+
+
+```{r pressure5, echo=TRUE}
+par(mfrow = c(1,2))
+
+Men_Class <- table(Survived = train$Survived[train$Age > 14 & train$Sex == "male"],CLASS = train$Pclass[train$Age > 14 & train$Sex == "male"])
+
+Women_Class <- table(Survived = train$Survived[train$Age > 14 & train$Sex == "female"],CLASS = train$Pclass[train$Age > 14 & train$Sex == "female"])
+addmargins(Survive_Class)
+
+addmargins(Survive_Class)
+
+color.names = c("red","blue")
+lgnd <- c("Died", "Survived")
+
+barplot(Men_Class,main="Class/Survival Status - Adult Males",ylab="Frequency",col = color.names,beside= TRUE,legend=lgnd,args.legend = list(x = "topleft",horiz = FALSE))
+
+barplot(Women_Class,main="Class/Survival Status - Adult Females",ylab="Frequency",col = color.names,beside= TRUE,legend=FALSE)
+
+par(mfrow = c(1,3))
+Class1Males <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 1 & train$Sex == "male"])
+Class2Males <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 2 & train$Sex == "male"])
+Class3Males <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 3 & train$Sex == "male"])
+
+
+Class1Females <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 1 & train$Sex == "female"])
+Class2Females <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 2 & train$Sex == "female"])
+Class3Females <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 3 & train$Sex == "female"])
+
+pie(Class1Males,main="Class 1 Males", col = color.names)
+pie(Class2Males,main="Class 2 Males", col = color.names)
+pie(Class3Males,main="Class 3 Males", col = color.names)
+
+pie(Class1Females,main="Class 1 Females", col = color.names)
+pie(Class2Females,main="Class 2 Females", col = color.names)
+pie(Class3Females,main="Class 3 Females", col = color.names)
+```
+
+
+```{r pressure6, echo=TRUE}
+par(mfrow = c(1,2))
+
+Men_Class <- table(Survived = train$Survived[train$Age > 14 & train$Sex == "male"],CLASS = train$Pclass[train$Age > 14 & train$Sex == "male"])
+addmargins(Men_Class)
+Women_Class <- table(Survived = train$Survived[train$Age > 14 & train$Sex == "female"],CLASS = train$Pclass[train$Age > 14 & train$Sex == "female"])
+
+
+addmargins(Women_Class)
+
+color.names = c("red","blue")
+lgnd <- c("Died", "Survived")
+
+barplot(Men_Class,main="Class/Survival Status - Adult Males",ylab="Frequency",col = color.names,beside= TRUE,legend=lgnd,args.legend = list(x = "topleft",horiz = FALSE))
+
+barplot(Women_Class,main="Class/Survival Status - Adult Females",ylab="Frequency",col = color.names,beside= TRUE,legend=FALSE)
+
+par(mfrow = c(1,3))
+Class1Males <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 1 & train$Sex == "male"])
+Class2Males <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 2 & train$Sex == "male"])
+Class3Males <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 3 & train$Sex == "male"])
+
+
+Class1Females <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 1 & train$Sex == "female"])
+Class2Females <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 2 & train$Sex == "female"])
+Class3Females <- table(Survived = train$Survived[train$Age > 14 & train$Pclass == 3 & train$Sex == "female"])
+
+pie(Class1Males,main="Class 1 Males", col = color.names)
+pie(Class2Males,main="Class 2 Males", col = color.names)
+pie(Class3Males,main="Class 3 Males", col = color.names)
+
+pie(Class1Females,main="Class 1 Females", col = color.names)
+pie(Class2Females,main="Class 2 Females", col = color.names)
+pie(Class3Females,main="Class 3 Females", col = color.names)
+```
+
+
+```{r pressure7, echo=TRUE}
+
+
+
+
+S_E_hypo <- table(Survived = train$Survived[train$Age > 14 & train$Sex == "male" & train$FTDeckEmb == "S_E" & train$SibSp == 0 & train$Parch == 0],CLASS = train$Pclass[train$Age > 14 & train$Sex == "male" & train$FTDeckEmb == "S_E" & train$SibSp == 0 & train$Parch == 0])
+addmargins(S_E_hypo)
+
+
+barplot(S_E_hypo,main="Potential Crewman",ylab="Frequency",col = color.names,beside= TRUE,legend=lgnd,args.legend = list(x = "topleft",horiz = FALSE))
+
+
+
+S_E_hypo <- table(Survived = train$Survived[train$Age > 14 & train$Sex == "female" & train$FTDeckEmb == "S_E" & train$SibSp == 0 & train$Parch == 0],CLASS = train$Pclass[train$Age > 14 & train$Sex == "female" & train$FTDeckEmb == "S_E" & train$SibSp == 0 & train$Parch == 0])
+addmargins(S_E_hypo)
+
+
+barplot(S_E_hypo,main="Potential Female Crew",ylab="Frequency",col = color.names,beside= TRUE,legend=lgnd,args.legend = list(x = "topleft",horiz = FALSE))
+
+
+
+
+```
+
+
+```{r pressure8, echo=FALSE}
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
